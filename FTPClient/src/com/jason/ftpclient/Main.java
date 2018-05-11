@@ -106,6 +106,15 @@ public class Main {
 							System.out.println("Server encountered an error");
 						}
 						break;
+					case "mkdir":
+						if(do_mkdir(userArg.toString().trim()))
+						{
+							System.out.println("mkdir "+userArg.toString().trim()+" with success!");
+						}else
+						{
+							System.out.println("Server encountered an error");
+						}
+						break;
 					case "list":
 						do_list();
 						break;
@@ -211,6 +220,20 @@ public class Main {
 		}
 		
 		return result;
+	}
+	private static boolean do_mkdir(String dirName)
+	{
+		boolean result=false;
+		ctrlWriter.println("mkdir");
+		dataWriter.println(dirName);
+		//接受服务器发来的是否成功的消息
+		if(ctrlScanner.next().equals("OK"))
+		{
+			result=true;
+		    
+		}
+		  return result;
+
 	}
 
 }

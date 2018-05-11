@@ -12,6 +12,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
 
+import javax.lang.model.element.VariableElement;
+
 public class ServerSession implements Runnable {
 	
 	private Socket controlSocket;
@@ -71,6 +73,15 @@ public class ServerSession implements Runnable {
 				if (do_put()) {
 					controlWriter.println("OK");
 				} else {
+					controlWriter.println("ERROR");
+				}
+				break;
+			case "mkdir":
+				if(do_mkdir())
+				{
+					controlWriter.println("OK");
+				}
+				else {
 					controlWriter.println("ERROR");
 				}
 				break;
@@ -170,6 +181,31 @@ public class ServerSession implements Runnable {
 			dataWriter.println(f.getName());
 		}
 		dataWriter.println("$");
+	}
+	
+	public boolean do_mkdir() {
+		String dirName="";
+		boolean result=false;
+		
+		if(dataScanner.hasNextLine())
+		{
+			dirName=dataScanner.nextLine();
+			Path currentPath = Paths.get(".");
+			System.out.println(currentPath);
+			File newdir=new File(dirName);
+			if(newdir.exists())
+			{
+				System.out.println("文件夹创建失败，该文件夹已存在");
+			}
+			else
+			{
+				if(newdir.mkdirs())
+				{
+					result=true;
+				}
+			}
+		}
+		return result;
 	}
 
 }

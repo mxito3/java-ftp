@@ -11,8 +11,7 @@ public class Main {
 	public static void main(String[] args) {
 		
 		//set up listening socket
-		try {
-					
+		try {	
 			new Thread(new ControlWelcomeHandler(8545)).start();
 			new Thread(new DataWelcomeHandler(8546)).start();
 
