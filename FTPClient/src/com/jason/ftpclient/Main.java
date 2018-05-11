@@ -49,21 +49,24 @@ public class Main {
 		
 		//set up the two socket connection
 		try {
+			//建立与control socket的连接
 			Socket ctrlSocket = new Socket(addr,port);
 			ctrlScanner = new Scanner(ctrlSocket.getInputStream());
 			ctrlWriter = new PrintWriter(ctrlSocket.getOutputStream(),true);
 			System.out.println("Control socket established to " + ctrlSocket.getInetAddress() + " port " + ctrlSocket.getPort());
-						
+			//获取control socket发给我的socket的id
 			Long connectionId = ctrlScanner.nextLong();
 			System.out.println("Received connection id from server: " + connectionId);
+			//尝试连接到提供数据的socket
 			Socket dataSocket = new Socket(addr,port+1);
 			dataIs = dataSocket.getInputStream();
 			dataOs = dataSocket.getOutputStream();
 			dataScanner = new Scanner(dataIs);
 			dataWriter = new PrintWriter(dataOs,true);
+			//将刚刚control socket发给我的id发送给data server
 			dataWriter.println(connectionId.toString());
 			System.out.println("Data socket established to " + dataSocket.getInetAddress() + " port " + dataSocket.getPort());
-			
+			//获取键盘输入
 			userInputScanner = new Scanner(System.in);
 			
 			String inputLine = "";
@@ -74,10 +77,12 @@ public class Main {
 				userArg = new StringBuilder();
 				System.out.print("ftp> ");
 				
-				//get command and command string arguments
+				//获取输入的命令的，多个命令以空格分开
 				inputLine = userInputScanner.nextLine().trim();
+				//commandStrings是单个命令的数组
 				String[] commandStrings = inputLine.split(" ");
-				if (commandStrings != null && commandStrings.length > 0 && !commandStrings[0].trim().isEmpty()) { //check for blank lines
+				if (commandStrings != null && commandStrings.length > 0 && !commandStrings[0].trim().isEmpty()) { //check for blank line
+					
 					
 					userCommand = commandStrings[0].trim();	//the command given
 					
@@ -90,7 +95,6 @@ public class Main {
 					switch (userCommand) {
 					case "put":
 						if (do_put(userArg.toString().trim())) {
-							
 						} else {
 							System.out.println("Server encountered an error");
 						}
@@ -178,20 +182,23 @@ public class Main {
 
 	private static boolean do_put(String fileName) {
 		boolean result = false;
-		
+		//File用来新建一个文件对象来读取文件
 		File inFile = new File(fileName);
 		try {
+			//读取文件内容到文件对象
 			FileInputStream fileInputStream = new FileInputStream(inFile);
 			ctrlWriter.println("PUT");
 			dataWriter.println(fileName);
 			dataWriter.println(inFile.length());
 			int recv = 0;
 			while ((recv = fileInputStream.read(buff, 0, buff.length)) > 0) {
+            //read用来从文件对象读数据，每次读取一个字符，如果没到文件末尾他会将该字符当作整数值返回，如果到文件末尾，返回-1
 				dataOs.write(buff,0,recv);
 			}
 			dataOs.flush();
 			fileInputStream.close();
 			if (ctrlScanner.next().equals("OK")) {
+				//next读取一个单词，不带空格
 				result = true;
 			} else {
 				System.out.println("Problem sending file to server.");
