@@ -155,9 +155,9 @@ public class ServerSession implements Runnable {
 	public boolean do_put() {
 		
 		boolean result = false;
-		String fileName = dataScanner.nextLine();
+		String fileName = dataScanner.next();
 		try {
-			
+			System.out.println("服务器收到名字是   "+fileName);
 			//set up the output file
 			File outFile = new File(fileName);
 			if (outFile.exists())
@@ -258,22 +258,45 @@ public class ServerSession implements Runnable {
 			File file=new File(fileName);
 			if(file.exists())
 			{
-				try {
-					if(file.delete())
-					{
-						result=true;
+				if(file.isFile())
+				{
+					try {
+						if(file.delete())
+						{
+							result=true;
+						}
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				}
+				else if (file.isDirectory()) {
+					result=deleteDir(file);
 				}
 				
+				
 			}
+			
 			
 		}
 		return result;
 	}
-	
+	private boolean deleteDir(File dirName)
+	{
+		boolean result=false;
+		  String[] children = dirName.list();
+	            for (int i=0; i<children.length; i++) {
+	                result = deleteDir(new File(dirName, children[i]));
+	                if (!result) {
+	                    return false;
+	                }
+	            }
+        if(dirName.delete())
+        {
+        	result=true;
+        }
+		return result;
+	}
 	
 
 }

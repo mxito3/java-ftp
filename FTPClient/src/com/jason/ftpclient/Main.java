@@ -14,6 +14,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
 	
@@ -75,7 +76,9 @@ public class Main {
 				System.out.print("ftp> ");
 				
 				//get command and command string arguments
+				
 				inputLine = userInputScanner.nextLine().trim();
+				
 				String[] commandStrings = inputLine.split(" ");
 				if (commandStrings != null && commandStrings.length > 0 && !commandStrings[0].trim().isEmpty()) { //check for blank lines
 					
@@ -86,7 +89,7 @@ public class Main {
 						userArg.append(commandStrings[i]);
 						userArg.append(" ");
 					}
-	
+					
 					switch (userCommand) {
 					case "put":
 						if (do_put(userArg.toString().trim())) {
@@ -197,10 +200,33 @@ public class Main {
 		}
 		return result;
 	}
-
-	private static boolean do_put(String fileName) {
+	
+	private static boolean do_put(String files)
+	{
 		boolean result = false;
+		int successTime=0;
+		String[] fileAll=files.split(" ");
+		String fileName="";
+		for(int i=0;i<fileAll.length;i++)
+		{
+			fileName=fileAll[i];
+			System.out.println("客户端的文件名字是 "+fileName);
+			if(put_one(fileName))
+			{
+				successTime++;
 		
+			}
+			
+		}
+		if(successTime==fileAll.length)
+		{
+			result=true;
+		}
+		return result;
+	}
+	private static boolean put_one(String fileName) {
+		System.out.println("put  "+fileName);
+		boolean result = false;
 		File inFile = new File(fileName);
 		try {
 			FileInputStream fileInputStream = new FileInputStream(inFile);
@@ -213,10 +239,12 @@ public class Main {
 			}
 			dataOs.flush();
 			fileInputStream.close();
-			if (ctrlScanner.next().equals("OK")) {
+			String serverReturn=ctrlScanner.next();
+			System.out.println("服务器返回"+serverReturn);
+			if (serverReturn.equals("OK")) {
 				result = true;
 			} else {
-				System.out.println("Problem sending file to server.");
+				System.out.println("Problem sending file"+fileName+"to server.");
 			}
 			
 		} catch (FileNotFoundException e) {
