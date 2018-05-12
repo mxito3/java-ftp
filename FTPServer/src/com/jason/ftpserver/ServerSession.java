@@ -12,8 +12,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
 
-import javax.lang.model.element.VariableElement;
-
 public class ServerSession implements Runnable {
 	
 	private Socket controlSocket;
@@ -78,6 +76,24 @@ public class ServerSession implements Runnable {
 				break;
 			case "mkdir":
 				if(do_mkdir())
+				{
+					controlWriter.println("OK");
+				}
+				else {
+					controlWriter.println("ERROR");
+				}
+				break;
+			case "touch":
+				if(do_touch())
+				{
+					controlWriter.println("OK");
+				}
+				else {
+					controlWriter.println("ERROR");
+				}
+				break;
+			case "delete":
+				if(do_delete())
 				{
 					controlWriter.println("OK");
 				}
@@ -207,5 +223,57 @@ public class ServerSession implements Runnable {
 		}
 		return result;
 	}
+	
+	public boolean do_touch() {
+		String fileName="";
+		boolean result=false;
+		
+		if(dataScanner.hasNextLine())
+		{
+			fileName=dataScanner.nextLine();
+			File newfile=new File(fileName);
+			if(!newfile.exists())
+			{
+				try {
+					if(newfile.createNewFile())
+					{
+						result=true;
+					}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+			}
+			
+		}
+		return result;
+	}
+	public boolean do_delete() {
+		String fileName="";
+		boolean result=false;
+		if(dataScanner.hasNextLine())
+		{
+			fileName=dataScanner.nextLine();
+			File file=new File(fileName);
+			if(file.exists())
+			{
+				try {
+					if(file.delete())
+					{
+						result=true;
+					}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+			}
+			
+		}
+		return result;
+	}
+	
+	
 
 }

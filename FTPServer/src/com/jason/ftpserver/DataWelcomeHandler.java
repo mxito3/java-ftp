@@ -14,7 +14,7 @@ private ServerSocket dataServerSocket;
 private Scanner scanner;
 	
 	public DataWelcomeHandler(int port) throws UnknownHostException, IOException {
-		dataServerSocket = new ServerSocket(port,10);
+		dataServerSocket = new ServerSocket(port,10,Inet4Address.getLocalHost());
 		System.out.println("Data welcome socket started with address " + dataServerSocket.getInetAddress() + 
 				" port " + dataServerSocket.getLocalPort());
 	}	
@@ -25,15 +25,13 @@ private Scanner scanner;
 			Socket dataSocket = null;
 			Socket ctrlSocket = null;
 			try {
-				//等待连接
 				dataSocket = dataServerSocket.accept();
 				System.out.println("Data connection attempt from " + dataSocket.getInetAddress() + 
 						" port " + dataSocket.getPort());
 				dataSocket.setSoTimeout(5000); //read timeout of 5 seconds
-				scanner = new Scanner(dataSocket.getInputStream());//得到输入流
-				//从输入流获取到id
+				scanner = new Scanner(dataSocket.getInputStream());
 				Long connectionId = scanner.nextLong();
-			    //从hash表获得该id的socket
+				
 				ctrlSocket = Main.conMap.get(connectionId);
 				
 				if (ctrlSocket == null) {

@@ -20,7 +20,7 @@ public class ControlWelcomeHandler implements Runnable {
 	}
 	
 	public ControlWelcomeHandler(int port) throws UnknownHostException, IOException {
-		controlServerSocket = new ServerSocket(port,10);
+		controlServerSocket = new ServerSocket(port,10,Inet4Address.getLocalHost());
 		System.out.println("Control welcome socket started with address " + controlServerSocket.getInetAddress() + 
 				" port " + controlServerSocket.getLocalPort());
 	}	
@@ -38,7 +38,6 @@ public class ControlWelcomeHandler implements Runnable {
 				//send connection ID to client.  He/She will need this when opening a data socket
 				Long connectionId = random.nextLong();
 				writer = new PrintWriter(socket.getOutputStream(),true);
-				//将生成的客户端的id发送给客户端并且保存其id
 				writer.println(connectionId.toString());
 				Main.conMap.put(connectionId, socket);
 				
