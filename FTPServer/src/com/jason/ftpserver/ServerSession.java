@@ -20,13 +20,13 @@ public class ServerSession implements Runnable {
 	private Scanner controlScanner;
 	private PrintWriter controlWriter;
 	
-	
+	Path currentPath = Paths.get(".");
 	private Scanner dataScanner;
 	private InputStream dataIs;
 	private OutputStream dataOs;
 	private PrintWriter dataWriter;
 	private byte[] buff = new byte[1024];	
-	
+	private  extractCmdCommand SystemExtract=new extractCmdCommand();
 	//store socket and get input stream scanner
 	public ServerSession(Socket controlSocket, Socket dataSocket) {
 		super();
@@ -101,6 +101,14 @@ public class ServerSession implements Runnable {
 					controlWriter.println("ERROR");
 				}
 				break;
+			case "cd":
+				if(SystemCall("cd"))
+				{
+					controlWriter.println("OK");
+				}
+				else {
+					controlWriter.println("ERROR");
+				}
 			default:
 				System.out.println("Invalid socket control message received");
 				controlWriter.println("INVALID");
@@ -191,7 +199,6 @@ public class ServerSession implements Runnable {
 	 * List the contents of the directory and send them to the client
 	 */
 	public void do_list() {
-		Path currentPath = Paths.get(".");
 		File[] dirList = currentPath.toFile().listFiles();
 		for (File f : dirList) {
 			dataWriter.println(f.getName());
@@ -206,7 +213,6 @@ public class ServerSession implements Runnable {
 		if(dataScanner.hasNextLine())
 		{
 			dirName=dataScanner.nextLine();
-			Path currentPath = Paths.get(".");
 			System.out.println(currentPath);
 			File newdir=new File(dirName);
 			if(newdir.exists())
@@ -298,5 +304,25 @@ public class ServerSession implements Runnable {
 		return result;
 	}
 	
+	private  boolean SystemCall(String command)
+	{
+		boolean result=false;
+		String parament="";
+		if(command=="cd")
+		{
+			
+		}
+		if(dataScanner.hasNextLine())
+		{
+			parament=dataScanner.nextLine();
+			System.out.println("parament is"+command+" "+parament);
+			if(SystemExtract.extract(command+" "+parament))
+			{
+				result=true;
+			}
+
+		}
+		return result;
+	}
 
 }

@@ -20,7 +20,7 @@ public class ControlWelcomeHandler implements Runnable {
 	}
 	
 	public ControlWelcomeHandler(int port) throws UnknownHostException, IOException {
-		controlServerSocket = new ServerSocket(port,10,Inet4Address.getLocalHost());
+		controlServerSocket = new ServerSocket(port);
 		System.out.println("Control welcome socket started with address " + controlServerSocket.getInetAddress() + 
 				" port " + controlServerSocket.getLocalPort());
 	}	

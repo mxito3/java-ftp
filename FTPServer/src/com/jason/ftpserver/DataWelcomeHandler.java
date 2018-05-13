@@ -14,7 +14,7 @@ private ServerSocket dataServerSocket;
 private Scanner scanner;
 	
 	public DataWelcomeHandler(int port) throws UnknownHostException, IOException {
-		dataServerSocket = new ServerSocket(port,10,Inet4Address.getLocalHost());
+		dataServerSocket = new ServerSocket(port);
 		System.out.println("Data welcome socket started with address " + dataServerSocket.getInetAddress() + 
 				" port " + dataServerSocket.getLocalPort());
 	}	

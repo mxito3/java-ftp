@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -13,8 +14,11 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Properties;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
+
+import com.jason.ftpserver.$missing$;
 
 public class Main {
 	
@@ -129,13 +133,23 @@ public class Main {
 							System.out.println("Server encountered an error");
 						}
 						break;
-					case "quit":
+					case "cd":
+						if (system_call(userArg.toString().trim())) {
+							
+						} else {
+							System.out.println("Server encountered an error");
+						}
+						break;
+					case "help":
+						do_help();				
+					break;
+					case "exit":
 						do_quit();
 						userInputScanner.close();
 						ctrlSocket.close();
 						dataSocket.close();					
 					break;
-				
+					
 					default:
 						System.out.println("Invalid command.");
 					}
@@ -157,6 +171,8 @@ public class Main {
 	private static void do_list() {
 		ctrlWriter.println("LIST");
 		System.out.println("\nFTP Server contents:");
+		
+		
 		String fileName = dataScanner.nextLine();
 		while(!fileName.equals("$")) {
 			System.out.println(fileName);
@@ -297,5 +313,56 @@ public class Main {
 		  return result;
 
 	}
+	private static Boolean system_call(String command)
+	{
+		boolean result=false;
+		System.out.println("is"+command);
+		ctrlWriter.println("cd");
+		dataWriter.println(command);
+		if(ctrlScanner.next().equals("OK"))
+		{
+			result=true;
+		}	
+		return result;
+	}
+	private static void do_help()
+	 {
+		 //check os
+		String osName=getOS();
+		String filePath="";
+		if(osName.startsWith("Windows")){//windows下调用系统命令  
+            filePath=System.getProperty("user.dir")+"\\"+"help.txt";
+        }else if(osName.startsWith("Linux")){//Linux下调用系统命令  
+        	filePath=System.getProperty("user.dir")+"/"+"help.txt";
+        }
+		 
+         
+		 char[] buf = new char[1024];  
+		 int num;  
+		 File file=new File(filePath);
+		 if(!file.exists())
+		 {
+			 System.out.println("找不到help文件");
+			 return;
+		 }
+		 
+		 try {
+			 FileReader fr = new FileReader(filePath);  
+			while ((num = fr.read(buf)) != -1) {  
+			         System.out.print(new String(buf, 0, num));  
+			     }
+			fr.close();  
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}  
+		// TODO Auto-generated constructor stub
+	}
+
+public static String getOS(){  
+    Properties pros = System.getProperties();  
+    String os = (String) pros.get("os.name");  
+    return os;  
+}  
 
 }
