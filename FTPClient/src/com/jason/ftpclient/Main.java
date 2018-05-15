@@ -1,5 +1,6 @@
 package com.jason.ftpclient;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -7,6 +8,8 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.ConnectException;
@@ -16,9 +19,11 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Properties;
 import java.util.Scanner;
-import java.util.concurrent.TimeUnit;
 
-import com.jason.ftpserver.$missing$;
+import javax.swing.plaf.synth.SynthStyle;
+
+
+
 
 public class Main {
 	
@@ -29,7 +34,7 @@ public class Main {
 	private static Scanner dataScanner;
 	private static PrintWriter dataWriter;
 	private static Scanner userInputScanner;
-	
+	private static int  runOrNot=0;
 	private static byte[] buff = new byte[1024];
 	
 	public static void main(String[] args) {
@@ -58,7 +63,7 @@ public class Main {
 			ctrlScanner = new Scanner(ctrlSocket.getInputStream());
 			ctrlWriter = new PrintWriter(ctrlSocket.getOutputStream(),true);
 			System.out.println("Control socket established to " + ctrlSocket.getInetAddress() + " port " + ctrlSocket.getPort());
-						
+			runOrNot=1;			
 			Long connectionId = ctrlScanner.nextLong();
 			System.out.println("Received connection id from server: " + connectionId);
 			Socket dataSocket = new Socket(addr,port+1);
@@ -75,7 +80,11 @@ public class Main {
 			String userCommand = "";
 			StringBuilder userArg;
 			while (! userCommand.equals("quit")) {
-				
+				if(runOrNot==0)
+				{
+					System.out.println("process end!");
+					break;		
+				}
 				userArg = new StringBuilder();
 				System.out.print("ftp> ");
 				
@@ -103,7 +112,7 @@ public class Main {
 						}
 						break;
 					case "get":
-						if (do_get(userArg.toString().trim())) {
+						if (get(userArg.toString().trim())) {
 							
 						} else {
 							System.out.println("Server encountered an error");
@@ -147,7 +156,8 @@ public class Main {
 						do_quit();
 						userInputScanner.close();
 						ctrlSocket.close();
-						dataSocket.close();					
+						dataSocket.close();	
+						runOrNot=0;
 					break;
 					
 					default:
@@ -181,96 +191,8 @@ public class Main {
 		System.out.println();
 	}
 
-	private static boolean do_get(String fileName) {
-		boolean result = false;
-		File outFile = new File(fileName);
-		try {
-			if(outFile.exists()) {
-			outFile.delete();
-			}
-			outFile.createNewFile();
-			FileOutputStream fileOutputStream = new FileOutputStream(outFile);
-			
-			ctrlWriter.println("GET " + fileName);
-			long size = dataScanner.nextLong();
-			long len = 0;
-			int recv = 0;
-			if (size > 0) {
-				while (len + recv < size) {
-					len += recv;
-					recv = dataIs.read(buff,0,buff.length);					
-					fileOutputStream.write(buff,0,recv);
-				}
-			}
-			
-			fileOutputStream.close();
-			if (ctrlScanner.next().equals("OK")) {
-				System.out.println("Received file " + fileName);
-				result = true;
-			} else {
-				outFile.delete();
-			}
-		
-		} catch (IOException e) {
-			System.out.println("Error while runing get: " +e);
-		}
-		return result;
-	}
 	
-	private static boolean do_put(String files)
-	{
-		boolean result = false;
-		int successTime=0;
-		String[] fileAll=files.split(" ");
-		String fileName="";
-		for(int i=0;i<fileAll.length;i++)
-		{
-			fileName=fileAll[i];
-			System.out.println("客户端的文件名字是 "+fileName);
-			if(put_one(fileName))
-			{
-				successTime++;
-		
-			}
-			
-		}
-		if(successTime==fileAll.length)
-		{
-			result=true;
-		}
-		return result;
-	}
-	private static boolean put_one(String fileName) {
-		System.out.println("put  "+fileName);
-		boolean result = false;
-		File inFile = new File(fileName);
-		try {
-			FileInputStream fileInputStream = new FileInputStream(inFile);
-			ctrlWriter.println("PUT");
-			dataWriter.println(fileName);
-			dataWriter.println(inFile.length());
-			int recv = 0;
-			while ((recv = fileInputStream.read(buff, 0, buff.length)) > 0) {
-				dataOs.write(buff,0,recv);
-			}
-			dataOs.flush();
-			fileInputStream.close();
-			String serverReturn=ctrlScanner.next();
-			System.out.println("服务器返回"+serverReturn);
-			if (serverReturn.equals("OK")) {
-				result = true;
-			} else {
-				System.out.println("Problem sending file"+fileName+"to server.");
-			}
-			
-		} catch (FileNotFoundException e) {
-			System.out.println("File " + fileName + " was not found");
-		} catch (IOException e) {
-			System.out.println("Problem transfering file for put: " + e);
-		}
-		
-		return result;
-	}
+
 	private static boolean do_mkdir(String dirName)
 	{
 		boolean result=false;
@@ -296,7 +218,7 @@ public class Main {
 			result=true;
 		    
 		}
-		  return result;
+		return result;
 
 	}
 	private static boolean do_delete(String fileName)
@@ -364,5 +286,162 @@ public static String getOS(){
     String os = (String) pros.get("os.name");  
     return os;  
 }  
+
+
+
+private static boolean get(String fileName) {
+	boolean result = false;
+	File outFile = new File(fileName);
+	try {
+		if(outFile.exists()) {
+		outFile.delete();
+		}
+		outFile.createNewFile();
+		FileOutputStream fileOutputStream = new FileOutputStream(outFile);
+		
+		ctrlWriter.println("GET " + fileName);
+		if(ctrlScanner.hasNext())
+		{
+			String haveOrNot=ctrlScanner.next().trim();
+			
+			if(haveOrNot.equals("no"))
+			{
+				System.out.println("server has no file named "+fileName);
+				
+			}
+			else if(haveOrNot.equals("yes"))
+			{
+				long size = dataScanner.nextLong();
+				long len = 0;
+				int recv = 0;
+				int times=0;
+				if (size > 0) {
+					while (len<size) {
+						recv = dataIs.read(buff,0,buff.length);
+						if(recv!=-1)
+						{
+							len += recv;
+						}
+						fileOutputStream.write(buff,0,recv);
+						times++;
+						System.out.println("times "+times);
+					}
+				}
+				
+				fileOutputStream.close();
+				if(ctrlScanner.hasNext())
+				{
+					if (ctrlScanner.next().trim().equals("OK")) {
+						System.out.println("Received file " + fileName);
+						result = true;
+					} else {
+						outFile.delete();
+					}
+				}
+			}
+			else {
+				System.out.println("提示信息出问题了");
+			}
+		}
+	} catch (IOException e) {
+		System.out.println("Error while runing get: " +e);
+	}
+	
+	return result;
+}
+
+private static boolean do_put(String files) throws IOException
+{
+	boolean result = false;
+	int successTime=0;
+	String[] fileAll=files.split(" ");
+  	String fileName="";
+  	StringBuilder noSuchFile = null;
+  	//noSuchFile.length=0;
+  	//判断这些文件里面有没有不存在的
+  	int wrongFileName=0;
+  	for(int i=0;i<fileAll.length;i++)
+  	{
+  		fileName=fileAll[i];
+		File inFile=new File(fileName);
+  		if(!inFile.exists())
+		{
+  			System.out.println("file "+fileName+" doesn't exit");
+  			wrongFileName++;
+		}
+  	}
+  	if(wrongFileName>0)
+  	{
+  		return true;
+  	}
+  	else  //没不存在的文件
+  	{
+  		for(int i=0;i<fileAll.length;i++)
+  		{
+ 
+  				if(put_one(fileName))
+  				{
+  					successTime++;
+  				}
+  			
+  			System.out.println("已成功次数是 "+successTime);
+  			
+  		}
+  	}
+
+	if(successTime==fileAll.length)
+	{
+		result=true;
+	}
+	return result;
+}
+
+
+private static boolean put_one(String fileName) throws IOException {	
+	
+	boolean result = false;
+	String fname = fileName.trim();
+	File inFile = new File(fname);
+	LineNumberReader  lnr = new LineNumberReader(new FileReader(inFile));
+	lnr.skip(Long.MAX_VALUE);
+	lnr.close();
+	if(inFile.length()!=0)
+	{
+		ctrlWriter.println("PUT " + fileName);
+		InputStream fileStream;		
+		try {
+			fileStream = new FileInputStream(inFile);
+			dataWriter.println(lnr.getLineNumber() + 1);
+			int recv;		
+			int times=0;
+			while ((recv = fileStream.read(buff, 0, buff.length)) > 0) {
+				dataOs.write(buff,0,recv);
+				times++;
+				System.out.println("times "+times);
+			}
+			dataOs.flush();
+			fileStream.close();
+			ctrlWriter.println(" finish");
+			System.out.println("sent file " + fname);
+			if (ctrlScanner.next().equals("OK")) {
+				System.out.println("send file "+fileName+" to server with success!");
+				result = true;
+			} 
+		
+		} catch (IOException e) {
+			System.out.println("Error receiving file." + e);
+		}			
+	
+	}
+	else
+	{
+		result=do_touch(fileName);
+		if(result)
+		{
+			System.out.println("send file "+fileName+" to server with success!");
+		}
+	}
+	return result;
+}
 
 }

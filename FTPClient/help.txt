@@ -1,3 +1,20 @@
-hello
 
-lll
+NAME:
+     FTP - a sample ftp command line interface  
+
+     Copyright 2018 Yapie
+
+COMMANDS  USAGE:
+     help                 	                Shows a list of commands or help for one command
+     list                     			Shows a list of files on the server 
+     exit                  		        Quit the command line
+     touch example.txt       		        Create a new file named example.txt for server
+     delete example.txt      		        Delete the file named example.txt on server 
+     mkdir example	     		        Create a floder named example for server 
+     delete example       	                Delete a floder named example on server     
+     get example.txt                     	Get the file named example.txt
+     put example1.txt example2.txt ...          Send serval files to server
+
+VERSION:
+     0.0.1
+
