@@ -195,10 +195,11 @@ public boolean put() {
 		{
 			if(dataScanner.hasNextLine())
 			{
-				String neirong=dataScanner.nextLine();
+				String neirong=dataScanner.nextLine()+"\n";
 				i++;
 				System.out.println("在line循环里面 内容是"+neirong);
 				fileOutputStream.write(neirong.getBytes());
+				//fileOutputStream.write("\n");
 				fileOutputStream.flush();
 			}	
 		}

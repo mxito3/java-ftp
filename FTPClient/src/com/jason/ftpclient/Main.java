@@ -352,6 +352,7 @@ private static boolean get(String fileName) {
 
 private static boolean do_put(String files) throws IOException
 {
+	System.out.println("files is "+files);
 	boolean result = false;
 	int successTime=0;
 	String[] fileAll=files.split(" ");
@@ -363,6 +364,7 @@ private static boolean do_put(String files) throws IOException
   	for(int i=0;i<fileAll.length;i++)
   	{
   		fileName=fileAll[i];
+  		System.out.println("for里面"+fileName);
 		File inFile=new File(fileName);
   		if(!inFile.exists())
 		{
@@ -379,7 +381,7 @@ private static boolean do_put(String files) throws IOException
   		for(int i=0;i<fileAll.length;i++)
   		{
  
-  				if(put_one(fileName))
+  				if(put_one(fileAll[i]))
   				{
   					successTime++;
   				}
@@ -398,7 +400,7 @@ private static boolean do_put(String files) throws IOException
 
 
 private static boolean put_one(String fileName) throws IOException {	
-	
+	System.out.println("名字是 "+fileName);
 	boolean result = false;
 	String fname = fileName.trim();
 	File inFile = new File(fname);
